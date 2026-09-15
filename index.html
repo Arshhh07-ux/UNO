@@ -1,191 +1,1537 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNO 3D - Card Game</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>UNO 3D — Premium</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#03040a;
+  color:white;
+  font-family:Arial,Helvetica,sans-serif;
+  user-select:none;
+}
+
+body{
+  touch-action:manipulation;
+}
+
+canvas{
+  display:block;
+}
+
+#game{
+  position:fixed;
+  inset:0;
+}
+
+/* ================= HUD ================= */
+
+#hud{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+.topbar{
+  position:absolute;
+  top:18px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:10px;
+  z-index:20;
+}
+
+.badge{
+  padding:10px 18px;
+  border-radius:30px;
+  background:rgba(7,9,20,.78);
+  border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(15px);
+  box-shadow:0 10px 35px #0009;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+
+#turnText{
+  color:#70ddff;
+}
+
+#cardCount{
+  color:#ffd85c;
+}
+
+/* Players */
+
+.player{
+  position:absolute;
+  padding:10px 15px;
+  border-radius:15px;
+  background:rgba(5,7,15,.76);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(15px);
+  box-shadow:0 10px 35px #0009;
+  font-weight:900;
+  z-index:20;
+}
+
+#player1{
+  left:15px;
+  top:45%;
+}
+
+#player2{
+  right:15px;
+  top:45%;
+}
+
+#player3{
+  top:80px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+/* ================= CENTER ================= */
+
+#center{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  display:flex;
+  align-items:center;
+  gap:28px;
+  pointer-events:auto;
+  z-index:15;
+}
+
+.stackBox{
+  position:relative;
+}
+
+.stackLabel{
+  position:absolute;
+  top:-27px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:10px;
+  letter-spacing:2px;
+  font-weight:900;
+  opacity:.65;
+}
+
+.stack{
+  width:92px;
+  height:130px;
+  border-radius:16px;
+  border:2px solid rgba(255,255,255,.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:1000;
+  font-size:26px;
+  box-shadow:
+    0 20px 40px #000b,
+    inset 0 0 20px #ffffff15;
+  transition:.2s;
+  cursor:pointer;
+}
+
+.stack:hover{
+  transform:translateY(-8px) scale(1.05);
+}
+
+#drawPile{
+  background:
+    repeating-linear-gradient(
+      135deg,
+      #10142a 0px,
+      #10142a 9px,
+      #252c55 9px,
+      #252c55 18px
+    );
+}
+
+#drawPile span{
+  padding:12px;
+  border:2px solid white;
+  border-radius:12px;
+}
+
+/* ================= HAND ================= */
+
+#hand{
+  position:absolute;
+  left:50%;
+  bottom:5px;
+  transform:translateX(-50%);
+  width:min(1050px,96vw);
+  height:205px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  pointer-events:auto;
+  perspective:1200px;
+  z-index:30;
+}
+
+/* ================= CARDS ================= */
+
+.card{
+  width:92px;
+  height:132px;
+  margin:0 -18px;
+  border-radius:16px;
+  position:relative;
+  cursor:pointer;
+  transform:
+    rotateZ(var(--rotation))
+    translateY(var(--lift));
+  transition:
+    transform .22s ease,
+    filter .22s ease;
+  z-index:var(--z);
+  box-shadow:
+    0 18px 35px #000b,
+    0 3px 7px #0009;
+}
+
+.card:hover{
+  --lift:-30px;
+  transform:
+    rotateZ(var(--rotation))
+    translateY(-30px)
+    scale(1.06);
+  z-index:100;
+  filter:brightness(1.15);
+}
+
+.cardBody{
+  position:absolute;
+  inset:0;
+  border-radius:16px;
+  overflow:hidden;
+  border:2px solid rgba(255,255,255,.5);
+}
+
+.cardBody:before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.85);
+  transform:rotate(-35deg) scaleX(.72);
+}
+
+.cardBody:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(255,255,255,.45),
+      transparent 25%,
+      transparent 65%,
+      rgba(255,255,255,.1)
+    );
+}
+
+.red{
+  background:linear-gradient(145deg,#ff5267,#a50020);
+}
+
+.yellow{
+  background:linear-gradient(145deg,#fff06b,#d28c00);
+}
+
+.green{
+  background:linear-gradient(145deg,#55ffb2,#05784d);
+}
+
+.blue{
+  background:linear-gradient(145deg,#59c7ff,#0752c7);
+}
+
+.wild{
+  background:
+    conic-gradient(
+      #ff4055,
+      #ffe45c,
+      #4dffad,
+      #55c7ff,
+      #a46cff,
+      #ff4055
+    );
+}
+
+.wild .inner{
+  background:
+    linear-gradient(
+      135deg,
+      #141622,
+      #020308
+    );
+}
+
+.inner{
+  position:absolute;
+  inset:9px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-weight:1000;
+  font-size:43px;
+  text-shadow:
+    0 4px 8px #000b,
+    0 0 12px #fff3;
+}
+
+.corner{
+  position:absolute;
+  z-index:5;
+  font-size:15px;
+  font-weight:1000;
+}
+
+.tl{
+  top:10px;
+  left:10px;
+}
+
+.br{
+  right:10px;
+  bottom:10px;
+  transform:rotate(180deg);
+}
+
+/* ================= MENU ================= */
+
+#menu{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      #222b68 0,
+      #0a0c18 42%,
+      #020309 100%
+    );
+}
+
+.menuCard{
+  width:min(530px,92vw);
+  padding:38px;
+  text-align:center;
+  border-radius:30px;
+  background:rgba(8,10,22,.88);
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 35px 100px #000d;
+  backdrop-filter:blur(20px);
+}
+
+.logo{
+  font-size:65px;
+  font-weight:1000;
+  letter-spacing:-6px;
+  background:
+    linear-gradient(
+      90deg,
+      #ff4055,
+      #ffe45c,
+      #4dffad,
+      #55c7ff,
+      #a46cff
+    );
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.subtitle{
+  opacity:.55;
+  letter-spacing:4px;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:30px;
+}
+
+.menuButton{
+  width:100%;
+  padding:17px;
+  margin:6px 0;
+  border:0;
+  border-radius:17px;
+  color:white;
+  font-size:16px;
+  font-weight:1000;
+  cursor:pointer;
+  background:
+    linear-gradient(
+      135deg,
+      #272d61,
+      #11152e
+    );
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 10px 25px #0008;
+}
+
+.menuButton.primary{
+  background:
+    linear-gradient(
+      135deg,
+      #ff405e,
+      #793cff
+    );
+}
+
+.menuButton:active{
+  transform:scale(.98);
+}
+
+.note{
+  margin-top:20px;
+  opacity:.38;
+  font-size:11px;
+  line-height:1.6;
+}
+
+/* ================= MESSAGE ================= */
+
+#message{
+  position:fixed;
+  left:50%;
+  top:17%;
+  transform:translate(-50%,-50%) scale(.8);
+  padding:14px 25px;
+  border-radius:999px;
+  background:rgba(8,10,20,.9);
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 15px 45px #000b;
+  font-weight:1000;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+  z-index:500;
+}
+
+#message.show{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+}
+
+/* ================= COLOR PICKER ================= */
+
+#colorPicker{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#000b;
+  z-index:900;
+  justify-content:center;
+  align-items:center;
+  pointer-events:auto;
+}
+
+.colorPanel{
+  padding:28px;
+  border-radius:25px;
+  background:#0b0e1d;
+  border:1px solid #ffffff22;
+  text-align:center;
+  box-shadow:0 30px 80px #000;
+}
+
+.colorPanel h2{
+  margin-bottom:20px;
+}
+
+.colorGrid{
+  display:grid;
+  grid-template-columns:repeat(2,130px);
+  gap:12px;
+}
+
+.colorButton{
+  height:65px;
+  border:2px solid #ffffff66;
+  border-radius:15px;
+  color:white;
+  font-weight:1000;
+  cursor:pointer;
+}
+
+.cRed{background:#c91838}
+.cYellow{background:#d4a000}
+.cGreen{background:#08794d}
+.cBlue{background:#0754c7}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:650px){
+
+  .logo{
+    font-size:50px;
+  }
+
+  .menuCard{
+    padding:25px;
+  }
+
+  .card{
+    width:64px;
+    height:94px;
+    margin:0 -16px;
+  }
+
+  .inner{
+    font-size:30px;
+  }
+
+  .corner{
+    font-size:10px;
+  }
+
+  .stack{
+    width:67px;
+    height:96px;
+    font-size:18px;
+  }
+
+  #center{
+    gap:17px;
+  }
+
+  .player{
+    font-size:11px;
+  }
+
+  #hand{
+    height:150px;
+  }
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>🎴 UNO 3D</h1>
-            <p class="subtitle">Play the classic card game in 3D</p>
-        </header>
 
-        <!-- Main Game Area -->
-        <div class="game-wrapper">
-            <!-- Deck and Info Section -->
-            <div class="deck-section">
-                <div class="deck-container">
-                    <div class="deck-pile">
-                        <div class="deck-card">
-                            <span class="deck-label">Draw Deck</span>
-                            <p class="deck-count" id="deckCount">108</p>
-                        </div>
-                    </div>
-                    <div class="discard-pile">
-                        <div class="card card-active" id="currentCard">
-                            <div class="card-inner">
-                                <span class="card-value">5</span>
-                                <span class="card-type">RED</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div id="game"></div>
 
-            <!-- Game Board -->
-            <div class="game-board">
-                <!-- Player 3 (Top) -->
-                <div class="player-area player-3">
-                    <div class="player-info">
-                        <h3>Player 3</h3>
-                        <span class="card-count">7 cards</span>
-                    </div>
-                    <div class="player-hand player-hand-top">
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                    </div>
-                </div>
+<!-- MENU -->
 
-                <!-- Player 2 (Left) -->
-                <div class="player-area player-2">
-                    <div class="player-info">
-                        <h3>Player 2</h3>
-                        <span class="card-count">7 cards</span>
-                    </div>
-                    <div class="player-hand player-hand-left">
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                    </div>
-                </div>
+<div id="menu">
 
-                <!-- Center Indicator -->
-                <div class="center-indicator">
-                    <div class="turn-indicator" id="turnIndicator">
-                        <span class="turn-text">Player 1's Turn</span>
-                    </div>
-                </div>
+  <div class="menuCard">
 
-                <!-- Player 4 (Right) -->
-                <div class="player-area player-4">
-                    <div class="player-info">
-                        <h3>Player 4</h3>
-                        <span class="card-count">7 cards</span>
-                    </div>
-                    <div class="player-hand player-hand-right">
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                        <div class="card-stub"></div>
-                    </div>
-                </div>
-            </div>
+    <div class="logo">UNO 3D</div>
 
-            <!-- Player 1 Hand (Bottom) -->
-            <div class="player-area player-1">
-                <div class="player-info">
-                    <h3>You (Player 1)</h3>
-                    <span class="card-count">7 cards</span>
-                </div>
-                <div class="player-hand player-hand-bottom" id="playerHand">
-                    <div class="card card-playable" data-index="0">
-                        <div class="card-inner">
-                            <span class="card-value">5</span>
-                            <span class="card-type">Red</span>
-                        </div>
-                    </div>
-                    <div class="card card-playable" data-index="1">
-                        <div class="card-inner">
-                            <span class="card-value">5</span>
-                            <span class="card-type">Blue</span>
-                        </div>
-                    </div>
-                    <div class="card" data-index="2">
-                        <div class="card-inner">
-                            <span class="card-value">K</span>
-                            <span class="card-type">Draw 2</span>
-                        </div>
-                    </div>
-                    <div class="card card-playable" data-index="3">
-                        <div class="card-inner">
-                            <span class="card-value">9</span>
-                            <span class="card-type">Yellow</span>
-                        </div>
-                    </div>
-                    <div class="card" data-index="4">
-                        <div class="card-inner">
-                            <span class="card-value">?</span>
-                            <span class="card-type">Wild</span>
-                        </div>
-                    </div>
-                    <div class="card card-playable" data-index="5">
-                        <div class="card-inner">
-                            <span class="card-value">3</span>
-                            <span class="card-type">Green</span>
-                        </div>
-                    </div>
-                    <div class="card" data-index="6">
-                        <div class="card-inner">
-                            <span class="card-value">7</span>
-                            <span class="card-type">Red</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="btn btn-primary" id="drawBtn">Draw Card</button>
-            <button class="btn btn-secondary" id="unoBtn">UNO!</button>
-            <button class="btn btn-danger" id="restartBtn">Restart Game</button>
-        </div>
-
-        <!-- Game Stats -->
-        <div class="game-stats">
-            <div class="stat">
-                <span class="stat-label">Game Mode:</span>
-                <span class="stat-value">4 Players</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Round:</span>
-                <span class="stat-value" id="roundNum">1</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Direction:</span>
-                <span class="stat-value" id="direction">↻ Clockwise</span>
-            </div>
-        </div>
-
-        <!-- Instructions -->
-        <div class="instructions">
-            <h3>📋 How to Play</h3>
-            <ul>
-                <li>Match the card by <strong>color</strong> or <strong>number</strong></li>
-                <li>Play special cards to change the game flow</li>
-                <li>If you can't play, click "Draw Card"</li>
-                <li>Say "UNO!" when you're down to your last card</li>
-                <li>First player to empty their hand wins!</li>
-            </ul>
-        </div>
+    <div class="subtitle">
+      PREMIUM TABLE EDITION
     </div>
 
-    <!-- Game Over Modal -->
-    <div class="modal" id="gameOverModal">
-        <div class="modal-content">
-            <h2 id="winnerText">Player 1 Wins!</h2>
-            <p class="winner-message">Congratulations! You've won the game!</p>
-            <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
-        </div>
+    <button
+      class="menuButton primary"
+      id="playButton">
+      PLAY OFFLINE
+    </button>
+
+    <button
+      class="menuButton"
+      id="localButton">
+      LOCAL 2–4 PLAYER
+    </button>
+
+    <button
+      class="menuButton"
+      id="rulesButton">
+      HOW TO PLAY
+    </button>
+
+    <div class="note">
+      Premium 3D table • AI opponents •
+      Wild cards • +2 • +4 • Reverse • Skip
     </div>
 
-    <!-- Script -->
-    <script src="game.js"></script>
-</body>
-  </html>
+  </div>
 
+</div>
+
+<!-- HUD -->
+
+<div id="hud">
+
+  <div class="topbar">
+
+    <div class="badge" id="turnText">
+      YOUR TURN
+    </div>
+
+    <div class="badge">
+      CARDS:
+      <span id="cardCount">7</span>
+    </div>
+
+  </div>
+
+  <div class="player" id="player1">
+    🤖 REX · <span>7</span>
+  </div>
+
+  <div class="player" id="player2">
+    🤖 NOVA · <span>7</span>
+  </div>
+
+  <div class="player" id="player3">
+    🤖 ZEN · <span>7</span>
+  </div>
+
+  <div id="center">
+
+    <div class="stackBox">
+
+      <div class="stackLabel">
+        DRAW
+      </div>
+
+      <div class="stack" id="drawPile">
+        <span>UNO</span>
+      </div>
+
+    </div>
+
+    <div class="stackBox">
+
+      <div class="stackLabel">
+        DISCARD
+      </div>
+
+      <div
+        class="stack"
+        id="discardPile">
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="hand"></div>
+
+</div>
+
+<div id="message"></div>
+
+<!-- COLOR -->
+
+<div id="colorPicker">
+
+  <div class="colorPanel">
+
+    <h2>CHOOSE COLOR</h2>
+
+    <div class="colorGrid">
+
+      <button
+        class="colorButton cRed"
+        data-color="red">
+        RED
+      </button>
+
+      <button
+        class="colorButton cYellow"
+        data-color="yellow">
+        YELLOW
+      </button>
+
+      <button
+        class="colorButton cGreen"
+        data-color="green">
+        GREEN
+      </button>
+
+      <button
+        class="colorButton cBlue"
+        data-color="blue">
+        BLUE
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+
+/* =========================================================
+   THREE.JS 3D WORLD
+========================================================= */
+
+let scene;
+let camera;
+let renderer;
+
+function createWorld(){
+
+  scene = new THREE.Scene();
+
+  scene.fog =
+    new THREE.Fog(
+      0x05060c,
+      18,
+      42
+    );
+
+  camera =
+    new THREE.PerspectiveCamera(
+      48,
+      innerWidth / innerHeight,
+      .1,
+      100
+    );
+
+  camera.position.set(
+    0,
+    13,
+    13
+  );
+
+  camera.lookAt(
+    0,
+    0,
+    0
+  );
+
+  renderer =
+    new THREE.WebGLRenderer({
+      antialias:true,
+      alpha:true
+    });
+
+  renderer.setPixelRatio(
+    Math.min(
+      devicePixelRatio,
+      2
+    )
+  );
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+  renderer.shadowMap.enabled=true;
+
+  document
+    .getElementById("game")
+    .appendChild(renderer.domElement);
+
+  /* Lights */
+
+  scene.add(
+    new THREE.HemisphereLight(
+      0xaabbff,
+      0x05050b,
+      2.5
+    )
+  );
+
+  const light =
+    new THREE.DirectionalLight(
+      0xffffff,
+      4
+    );
+
+  light.position.set(
+    -6,
+    12,
+    7
+  );
+
+  light.castShadow=true;
+
+  scene.add(light);
+
+  const glow =
+    new THREE.PointLight(
+      0x6d55ff,
+      35,
+      22
+    );
+
+  glow.position.set(
+    0,
+    3,
+    0
+  );
+
+  scene.add(glow);
+
+  /* Table */
+
+  const table =
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        9,
+        9,
+        1,
+        96
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x11162e,
+        roughness:.4,
+        metalness:.25
+      })
+    );
+
+  table.position.y=-.8;
+
+  table.scale.z=.72;
+
+  table.receiveShadow=true;
+
+  scene.add(table);
+
+  /* Neon rim */
+
+  const rim =
+    new THREE.Mesh(
+      new THREE.TorusGeometry(
+        9,
+        .13,
+        12,
+        96
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x8c6cff,
+        emissive:0x321080,
+        emissiveIntensity:3,
+        metalness:.8,
+        roughness:.2
+      })
+    );
+
+  rim.rotation.x=Math.PI/2;
+
+  rim.scale.z=.72;
+
+  scene.add(rim);
+
+  /* Floating particles */
+
+  for(
+    let i=0;
+    i<90;
+    i++
+  ){
+
+    const star =
+      new THREE.Mesh(
+        new THREE.SphereGeometry(
+          .018,
+          5,
+          5
+        ),
+        new THREE.MeshBasicMaterial({
+          color:0xffffff
+        })
+      );
+
+    star.position.set(
+      (Math.random()-.5)*40,
+      Math.random()*15-2,
+      (Math.random()-.5)*35
+    );
+
+    scene.add(star);
+  }
+
+  animate3D();
+}
+
+function animate3D(){
+
+  requestAnimationFrame(
+    animate3D
+  );
+
+  if(renderer){
+
+    renderer.render(
+      scene,
+      camera
+    );
+
+  }
+
+}
+
+/* =========================================================
+   UNO ENGINE
+========================================================= */
+
+const COLORS=[
+  "red",
+  "yellow",
+  "green",
+  "blue"
+];
+
+const VALUES=[
+  "0","1","2","3","4","5",
+  "6","7","8","9",
+  "skip",
+  "reverse",
+  "+2"
+];
+
+let game;
+
+function makeCard(
+  color,
+  value
+){
+
+  return {
+    color,
+    value,
+    id:
+      Math.random()
+      .toString(36)
+      .slice(2)
+  };
+
+}
+
+function createDeck(){
+
+  let deck=[];
+
+  for(
+    const color of COLORS
+  ){
+
+    deck.push(
+      makeCard(color,"0")
+    );
+
+    for(
+      let n=1;
+      n<=9;
+      n++
+    ){
+
+      deck.push(
+        makeCard(color,String(n))
+      );
+
+      deck.push(
+        makeCard(color,String(n))
+      );
+
+    }
+
+    for(
+      const special of
+      ["skip","reverse","+2"]
+    ){
+
+      deck.push(
+        makeCard(color,special)
+      );
+
+      deck.push(
+        makeCard(color,special)
+      );
+
+    }
+
+  }
+
+  for(
+    let i=0;
+    i<4;
+    i++
+  ){
+
+    deck.push(
+      makeCard("wild","wild")
+    );
+
+    deck.push(
+      makeCard("wild","+4")
+    );
+
+  }
+
+  return shuffle(deck);
+
+}
+
+function shuffle(array){
+
+  return array.sort(
+    ()=>Math.random()-.5
+  );
+
+}
+
+function startGame(){
+
+  const deck=createDeck();
+
+  const hands=[
+    [],
+    [],
+    [],
+    []
+  ];
+
+  for(
+    let p=0;
+    p<4;
+    p++
+  ){
+
+    for(
+      let i=0;
+      i<7;
+      i++
+    ){
+
+      hands[p].push(
+        deck.pop()
+      );
+
+    }
+
+  }
+
+  let first;
+
+  do{
+
+    first=deck.pop();
+
+  }while(
+    first.color==="wild"
+  );
+
+  game={
+    deck,
+    hands,
+    discard:[first],
+    current:0,
+    direction:1,
+    chosenColor:null
+  };
+
+  renderGame();
+
+}
+
+function topCard(){
+
+  return game
+    .discard[
+      game.discard.length-1
+    ];
+
+}
+
+function playable(card){
+
+  const top=topCard();
+
+  if(card.color==="wild")
+    return true;
+
+  if(
+    game.chosenColor &&
+    card.color===game.chosenColor
+  )
+    return true;
+
+  return (
+    card.color===top.color ||
+    card.value===top.value
+  );
+
+}
+
+function nextPlayer(){
+
+  game.current =
+    (
+      game.current+
+      game.direction+
+      4
+    )%4;
+
+}
+
+function drawCards(
+  player,
+  amount
+){
+
+  for(
+    let i=0;
+    i<amount;
+    i++
+  ){
+
+    if(
+      game.deck.length===0
+    ){
+
+      reshuffle();
+
+    }
+
+    if(game.deck.length){
+
+      game.hands[player]
+        .push(
+          game.deck.pop()
+        );
+
+    }
+
+  }
+
+}
+
+function reshuffle(){
+
+  if(
+    game.discard.length<=1
+  )
+    return;
+
+  const top=
+    game.discard.pop();
+
+  game.deck.push(
+    ...game.discard
+  );
+
+  game.discard=[
+    top
+  ];
+
+  game.deck=
+    shuffle(game.deck);
+
+}
+
+function symbol(value){
+
+  if(value==="skip")
+    return "⊘";
+
+  if(value==="reverse")
+    return "↻";
+
+  return value
+    .toUpperCase();
+
+}
+
+/* =========================================================
+   RENDER CARDS
+========================================================= */
+
+function createCardElement(
+  card,
+  index
+){
+
+  const element=
+    document.createElement(
+      "div"
+    );
+
+  element.className=
+    "card";
+
+  element.style.setProperty(
+    "--rotation",
+    ((index-
+      (game.hands[0].length-1)/2)
+      *3)+"deg"
+  );
+
+  element.style.setProperty(
+    "--lift",
+    "0px"
+  );
+
+  element.style.setProperty(
+    "--z",
+    index
+  );
+
+  const body=
+    document.createElement(
+      "div"
+    );
+
+  body.className=
+    "cardBody "+
+    card.color;
+
+  const inner=
+    document.createElement(
+      "div"
+    );
+
+  inner.className=
+    "inner";
+
+  if(
+    card.color==="wild"
+  ){
+
+    inner.classList.add(
+      "wild"
+    );
+
+  }
+
+  inner.textContent=
+    symbol(card.value);
+
+  const tl=
+    document.createElement(
+      "span"
+    );
+
+  tl.className=
+    "corner tl";
+
+  tl.textContent=
+    symbol(card.value);
+
+  const br=
+    document.createElement(
+      "span"
+    );
+
+  br.className=
+    "corner br";
+
+  br.textContent=
+    symbol(card.value);
+
+  inner.append(
+    tl,
+    br
+  );
+
+  body.append(
+    inner
+  );
+
+  element.append(
+    body
+  );
+
+  element.onclick=
+    ()=>playHuman(index);
+
+  return element;
+
+}
+
+function renderHand(){
+
+  const hand=
+    document.getElementById(
+      "hand"
+    );
+
+  hand.innerHTML="";
+
+  game.hands[0]
+    .forEach(
+      (card,index)=>{
+        hand.appendChild(
+          createCardElement(
+            card,
+            index
+          )
+        );
+      }
+    );
+
+}
+
+function renderPlayers(){
+
+  document
+    .querySelector(
+      "#player1 span"
+    ).textContent=
+      game.hands[1].length;
+
+  document
+    .querySelector(
+      "#player2 span"
+    ).textContent=
+      game.hands[2].length;
+
+  document
+    .querySelector(
+      "#player3 span"
+    ).textContent=
+      game.hands[3].length;
+
+  document
+    .getElementById(
+      "cardCount"
+    ).textContent=
+      game.hands[0].length;
+
+  document
+    .getElementById(
+      "turnText"
+    ).textContent=
+      game.current===0
+      ? "YOUR TURN"
+      : "AI TURN";
+
+}
+
+function renderDiscard(){
+
+  const pile=
+    document.getElementById(
+      "discardPile"
+    );
+
+  const card=
+    topCard();
+
+  pile.className=
+    "stack "+
+    card.color;
+
+  pile.innerHTML=
+    "<b>"+
+    symbol(card.value)+
+    "</b>";
+
+}
+
+function renderGame(){
+
+  renderHand();
+
+  renderPlayers();
+
+  renderDiscard();
+
+}
+
+/* =========================================================
+   HUMAN PLAY
+========================================================= */
+
+function playHuman(index){
+
+  if(
+    game.current!==0
+  ){
+
+    showMessage(
+      "WAIT FOR YOUR TURN"
+    );
+
+    return;
+
+  }
+
+  const card=
+    game.hands[0][index];
+
+  if(
+    !playable(card)
+  ){
+
+    showMessage(
+      "CARD NOT PLAYABLE"
+    );
+
+    return;
+
+  }
+
+  game.hands[0]
+    .splice(
+      index,
+      1
+    );
+
+  game.discard.push(
+    card
+  );
+
+  game.chosenColor=null;
+
+  if(
+    card.color==="wild"
+  ){
+
+    openColorPicker(
+      ()=>{
+        finishCard(card)
+      }
+    );
+
+    return;
+
+  }
+
+  finishCard(card);
+
+}
+
+function finishCard(card){
+
+  applyEffect(card);
+
+  if(
+    game.hands[0].length===0
+  ){
+
+    showMessage(
+      "🏆 YOU WIN!"
+    );
+
+    setTimeout(
+      newGameAsk,
+      700
+    );
+
+    return;
+
+  }
+
+  nextPlayer();
+
+  renderGame();
+
+  if(
+    game.current!==0
+  ){
+
+    setTimeout(
+      aiTurn,
+      700
+    );
+
+  }
+
+}
+
+/* =========================================================
+   EFFECTS
+========================================================= */
+
+function applyEffect(card){
+
+  if(
+    card.value==="reverse"
+  ){
+
+    game.direction*=-1;
+
+  }
+
+  if(
+    card.value==="skip"
+  ){
+
+    nextPlayer();
+
+  }
+
+  if(
+    card.value==="+2"
+  ){
+
+    nextPlayer();
+
+    drawCards(
+      game.current,
+      2
+    );
+
+  }
+
+  if(
+    card.value==="+4"
+  ){
+
+    nextPlayer();
+
+    drawCards(
+      game.current,
+      4
+    );
+
+  }
+
+}
+
+/* =========================================================
+   AI
+========================================================= */
+
+function aiTurn(){
+
+  if(
+    game.current===0
+  )
+    return;
+
+  const player=
+    game.current;
+
+  const hand=
+    game.hands[player];
+
+  let index=
+    hand.findIndex(
+      playable
+    );
+
+  if(index===-1){
+
+    drawCards(
+      player,
+      1
+    );
+
+    index=
+      hand.findIndex(
+        playable
+      )
