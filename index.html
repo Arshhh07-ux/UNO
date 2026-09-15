@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO 3D - Card Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎴 UNO 3D</h1>
+            <p class="subtitle">Play the classic card game in 3D</p>
+        </header>
+
+        <!-- Main Game Area -->
+        <div class="game-wrapper">
+            <!-- Deck and Info Section -->
+            <div class="deck-section">
+                <div class="deck-container">
+                    <div class="deck-pile">
+                        <div class="deck-card">
+                            <span class="deck-label">Draw Deck</span>
+                            <p class="deck-count" id="deckCount">108</p>
+                        </div>
+                    </div>
+                    <div class="discard-pile">
+                        <div class="card card-active" id="currentCard">
+                            <div class="card-inner">
+                                <span class="card-value">5</span>
+                                <span class="card-type">RED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Board -->
+            <div class="game-board">
+                <!-- Player 3 (Top) -->
+                <div class="player-area player-3">
+                    <div class="player-info">
+                        <h3>Player 3</h3>
+                        <span class="card-count">7 cards</span>
+                    </div>
+                    <div class="player-hand player-hand-top">
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                    </div>
+                </div>
+
+                <!-- Player 2 (Left) -->
+                <div class="player-area player-2">
+                    <div class="player-info">
+                        <h3>Player 2</h3>
+                        <span class="card-count">7 cards</span>
+                    </div>
+                    <div class="player-hand player-hand-left">
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                    </div>
+                </div>
+
+                <!-- Center Indicator -->
+                <div class="center-indicator">
+                    <div class="turn-indicator" id="turnIndicator">
+                        <span class="turn-text">Player 1's Turn</span>
+                    </div>
+                </div>
+
+                <!-- Player 4 (Right) -->
+                <div class="player-area player-4">
+                    <div class="player-info">
+                        <h3>Player 4</h3>
+                        <span class="card-count">7 cards</span>
+                    </div>
+                    <div class="player-hand player-hand-right">
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                        <div class="card-stub"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player 1 Hand (Bottom) -->
+            <div class="player-area player-1">
+                <div class="player-info">
+                    <h3>You (Player 1)</h3>
+                    <span class="card-count">7 cards</span>
+                </div>
+                <div class="player-hand player-hand-bottom" id="playerHand">
+                    <div class="card card-playable" data-index="0">
+                        <div class="card-inner">
+                            <span class="card-value">5</span>
+                            <span class="card-type">Red</span>
+                        </div>
+                    </div>
+                    <div class="card card-playable" data-index="1">
+                        <div class="card-inner">
+                            <span class="card-value">5</span>
+                            <span class="card-type">Blue</span>
+                        </div>
+                    </div>
+                    <div class="card" data-index="2">
+                        <div class="card-inner">
+                            <span class="card-value">K</span>
+                            <span class="card-type">Draw 2</span>
+                        </div>
+                    </div>
+                    <div class="card card-playable" data-index="3">
+                        <div class="card-inner">
+                            <span class="card-value">9</span>
+                            <span class="card-type">Yellow</span>
+                        </div>
+                    </div>
+                    <div class="card" data-index="4">
+                        <div class="card-inner">
+                            <span class="card-value">?</span>
+                            <span class="card-type">Wild</span>
+                        </div>
+                    </div>
+                    <div class="card card-playable" data-index="5">
+                        <div class="card-inner">
+                            <span class="card-value">3</span>
+                            <span class="card-type">Green</span>
+                        </div>
+                    </div>
+                    <div class="card" data-index="6">
+                        <div class="card-inner">
+                            <span class="card-value">7</span>
+                            <span class="card-type">Red</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" id="drawBtn">Draw Card</button>
+            <button class="btn btn-secondary" id="unoBtn">UNO!</button>
+            <button class="btn btn-danger" id="restartBtn">Restart Game</button>
+        </div>
+
+        <!-- Game Stats -->
+        <div class="game-stats">
+            <div class="stat">
+                <span class="stat-label">Game Mode:</span>
+                <span class="stat-value">4 Players</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Round:</span>
+                <span class="stat-value" id="roundNum">1</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Direction:</span>
+                <span class="stat-value" id="direction">↻ Clockwise</span>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>📋 How to Play</h3>
+            <ul>
+                <li>Match the card by <strong>color</strong> or <strong>number</strong></li>
+                <li>Play special cards to change the game flow</li>
+                <li>If you can't play, click "Draw Card"</li>
+                <li>Say "UNO!" when you're down to your last card</li>
+                <li>First player to empty their hand wins!</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 id="winnerText">Player 1 Wins!</h2>
+            <p class="winner-message">Congratulations! You've won the game!</p>
+            <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="game.js"></script>
+</body>
+  </html>
+
