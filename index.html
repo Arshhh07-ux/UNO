@@ -1535,3 +1535,335 @@ function aiTurn(){
       hand.findIndex(
         playable
       )
+    if(index===-1){
+
+      nextPlayer();
+
+      renderGame();
+
+      if(game.current!==0){
+        setTimeout(aiTurn,700);
+      }
+
+      return;
+    }
+
+    const card=
+      hand.splice(index,1)[0];
+
+    game.discard.push(card);
+
+    game.chosenColor=null;
+
+    if(card.color==="wild"){
+
+      game.chosenColor=
+        COLORS[
+          Math.floor(
+            Math.random()*COLORS.length
+          )
+        ];
+
+      showMessage(
+        "AI CHOSE "+
+        game.chosenColor.toUpperCase()
+      );
+    }
+
+    applyEffect(card);
+
+    renderGame();
+
+    if(hand.length===0){
+
+      showMessage(
+        "🤖 AI "+(player===1?"REX":player===2?"NOVA":"ZEN")+" WINS!"
+      );
+
+      setTimeout(
+        newGameAsk,
+        900
+      );
+
+      return;
+    }
+
+    nextPlayer();
+
+    renderGame();
+
+    if(game.current!==0){
+
+      setTimeout(
+        aiTurn,
+        700
+      );
+
+    }
+
+}
+
+/* =========================================================
+   DRAW PILE
+========================================================= */
+
+document
+  .getElementById("drawPile")
+  .onclick=function(){
+
+    if(game.current!==0){
+
+      showMessage(
+        "WAIT FOR YOUR TURN"
+      );
+
+      return;
+    }
+
+    drawCards(0,1);
+
+    renderGame();
+
+    showMessage(
+      "CARD DRAWN"
+    );
+
+    const newCard=
+      game.hands[0]
+      [game.hands[0].length-1];
+
+    if(playable(newCard)){
+
+      showMessage(
+        "NEW CARD IS PLAYABLE!"
+      );
+
+    }else{
+
+      nextPlayer();
+
+      renderGame();
+
+      if(game.current!==0){
+
+        setTimeout(
+          aiTurn,
+          700
+        );
+
+      }
+
+    }
+
+};
+
+/* =========================================================
+   COLOR PICKER
+========================================================= */
+
+let colorCallback=null;
+
+function openColorPicker(callback){
+
+  colorCallback=callback;
+
+  document
+    .getElementById("colorPicker")
+    .style.display="flex";
+
+}
+
+document
+  .querySelectorAll(".colorButton")
+  .forEach(button=>{
+
+    button.addEventListener(
+      "click",
+      function(){
+
+        game.chosenColor=
+          this.dataset.color;
+
+        document
+          .getElementById("colorPicker")
+          .style.display="none";
+
+        if(colorCallback){
+
+          const cb=
+            colorCallback;
+
+          colorCallback=null;
+
+          cb();
+
+        }
+
+      }
+    );
+
+  });
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+let messageTimer;
+
+function showMessage(text){
+
+  const box=
+    document.getElementById(
+      "message"
+    );
+
+  box.textContent=text;
+
+  box.classList.add("show");
+
+  clearTimeout(messageTimer);
+
+  messageTimer=
+    setTimeout(
+      ()=>{
+        box.classList.remove(
+          "show"
+        );
+      },
+      1500
+    );
+
+}
+
+/* =========================================================
+   NEW GAME
+========================================================= */
+
+function newGameAsk(){
+
+  const again=
+    confirm(
+      "GAME OVER!\n\nPLAY AGAIN?"
+    );
+
+  if(again){
+
+    startGame();
+
+  }else{
+
+    location.reload();
+
+  }
+
+}
+
+/* =========================================================
+   MENU BUTTONS
+========================================================= */
+
+document
+  .getElementById("playButton")
+  .onclick=function(){
+
+    document
+      .getElementById("menu")
+      .style.display="none";
+
+    createWorld();
+
+    startGame();
+
+    showMessage(
+      "🔥 UNO 3D STARTED!"
+    );
+
+  };
+
+document
+  .getElementById("localButton")
+  .onclick=function(){
+
+    document
+      .getElementById("menu")
+      .style.display="none";
+
+    createWorld();
+
+    startGame();
+
+    showMessage(
+      "LOCAL MODE READY"
+    );
+
+  };
+
+document
+  .getElementById("rulesButton")
+  .onclick=function(){
+
+    alert(
+`UNO 3D — RULES
+
+🎴 MATCH
+Play a card matching
+the color or symbol.
+
+🌈 WILD
+Choose any color.
+
++2
+Next player draws 2.
+
++4
+Next player draws 4.
+
+↻ REVERSE
+Changes direction.
+
+⊘ SKIP
+Skips the next player.
+
+🔥 UNO
+Call UNO when you
+have one card left.
+
+🏆 WIN
+First player to use
+all cards wins.`
+    );
+
+  };
+
+/* =========================================================
+   WINDOW RESIZE
+========================================================= */
+
+window.addEventListener(
+  "resize",
+  function(){
+
+    if(
+      !camera ||
+      !renderer
+    )
+      return;
+
+    camera.aspect=
+      innerWidth/
+      innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      innerWidth,
+      innerHeight
+    );
+
+  }
+);
+
+</script>
+
+</body>
+</html>
